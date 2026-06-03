@@ -427,7 +427,7 @@ st.sidebar.markdown("""
     <h4 style='margin-top: 0; color: #1F4E78; font-size: 14px; display: flex; align-items: center; gap: 6px;'>☕ 개발자 후원 및 소통</h4>
     <p style='font-size: 11px; color: #555; margin-bottom: 10px; line-height: 1.4;'>유익하게 사용하셨나요? 따뜻한 후원이 서비스 유지 및 기능 개선에 큰 응원이 됩니다!</p>
     <div style='font-size: 11px; font-weight: bold; color: #2C3E50; background: rgba(255,255,255,0.7); padding: 8px; border-radius: 6px; text-align: center; margin-bottom: 8px; border: 1px dashed rgba(31, 78, 120, 0.4);'>
-        🏦 카카오뱅크 3333-20-4967973<br>(예금주: 김감렬)
+        🏦 카카오뱅크 3333-20-4967973
     </div>
     <a href='https://www.buymeacoffee.com/Gamm' target='_blank' style='display: block; text-align: center; background: #FFDD00; color: #000000; padding: 7px 10px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 11px; margin-bottom: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);'>💛 Buy me a coffee 후원</a>
     <a href='https://open.kakao.com/o/swVJmxRf' target='_blank' style='display: block; text-align: center; background: #FEE500; color: #191919; padding: 7px 10px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 11px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);'>💬 카카오톡 오픈채팅 문의</a>
