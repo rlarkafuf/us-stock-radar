@@ -8,6 +8,7 @@ from datetime import datetime
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import yfinance as yf
 
 # ----------------------------------------------------
 # 1. 페이지 초기 설정 및 디자인 테마 정의 (Custom CSS)
@@ -374,98 +375,41 @@ def process_financial_model_cached(facts_json):
 
 @st.cache_data(ttl=3600, show_spinner="Yahoo Finance에서 주가 정보를 수집하는 중...")
 def fetch_yfinance_data_cached(ticker):
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-    }
-    session = requests.Session()
-    session.headers.update(headers)
-    
+    """yfinance 라이브러리를 사용하여 안정적으로 실시간 주가 및 재무지표 정보를 수집하는 함수"""
     try:
-        session.get("https://fc.yahoo.com/", timeout=10)
+        t = yf.Ticker(ticker)
+        info = t.info
+        
+        # 2021-01-01부터 현재까지 1주 단위 주가 역사 데이터 수집
+        hist = t.history(start="2021-01-01", interval="1wk")
+        price_history = []
+        if not hist.empty:
+            for idx, row in hist.iterrows():
+                dt_str = idx.strftime("%Y-%m-%d")
+                price_history.append((dt_str, row['Close']))
+                
+        return info, price_history
     except Exception:
-        pass
-        
-    crumb = None
-    try:
-        crumb_res = session.get("https://query2.finance.yahoo.com/v1/test/getcrumb", timeout=10)
-        if crumb_res.status_code == 200:
-            crumb = crumb_res.text.strip()
-    except Exception:
-        pass
-        
-    quote_data = {}
-    if crumb:
-        url = f"https://query2.finance.yahoo.com/v10/finance/quoteSummary/{ticker}"
-        params = {
-            "modules": "summaryDetail,defaultKeyStatistics,financialData",
-            "crumb": crumb
-        }
-        try:
-            res = session.get(url, params=params, timeout=10)
-            if res.status_code == 200:
-                quote_data = res.json()
-        except Exception:
-            pass
-            
-    price_history = []
-    chart_url = f"https://query2.finance.yahoo.com/v8/finance/chart/{ticker}"
-    chart_params = {
-        "period1": 1609459200,  # 2021-01-01
-        "period2": int(time.time()),
-        "interval": "1wk"
-    }
-    if crumb:
-        chart_params["crumb"] = crumb
-        
-    try:
-        res = session.get(chart_url, params=chart_params, timeout=10)
-        if res.status_code == 200:
-            chart_json = res.json()
-            result = chart_json.get('chart', {}).get('result', [{}])[0]
-            timestamps = result.get('timestamp', [])
-            adjclose = result.get('indicators', {}).get('adjclose', [{}])[0].get('adjclose', [])
-            
-            for ts, price in zip(timestamps, adjclose):
-                if ts is not None and price is not None:
-                    dt_str = datetime.fromtimestamp(ts).strftime("%Y-%m-%d")
-                    price_history.append((dt_str, price))
-    except Exception:
-        pass
-        
-    return quote_data, price_history
+        return {}, []
 
-def extract_yfinance_metrics(quote_data):
-    if not quote_data:
+def extract_yfinance_metrics(info_data):
+    if not info_data:
         return {}
-    try:
-        result = quote_data.get('quoteSummary', {}).get('result', [{}])[0]
-    except IndexError:
-        return {}
-        
-    detail = result.get('summaryDetail', {})
-    stats = result.get('defaultKeyStatistics', {})
-    findata = result.get('financialData', {})
-    
-    def get_raw(d, key):
-        if not isinstance(d, dict):
-            return None
-        val_obj = d.get(key)
-        return val_obj.get('raw') if isinstance(val_obj, dict) else val_obj
         
     metrics = {
-        'currentPrice': get_raw(findata, 'currentPrice'),
-        'targetMeanPrice': get_raw(findata, 'targetMeanPrice'),
-        'marketCap': get_raw(detail, 'marketCap'),
-        'trailingPE': get_raw(detail, 'trailingPE'),
-        'forwardPE': get_raw(detail, 'forwardPE'),
-        'pegRatio': get_raw(stats, 'pegRatio'),
-        'priceToBook': get_raw(stats, 'priceToBook'),
-        'priceToSales': get_raw(detail, 'priceToSalesTrailing12Months'),
-        'roe': get_raw(findata, 'returnOnEquity'),
-        'divYield': get_raw(detail, 'dividendYield'),
-        'recommendation': findata.get('recommendationKey', 'N/A'),
-        'fiftyTwoWeekHigh': get_raw(detail, 'fiftyTwoWeekHigh'),
-        'fiftyTwoWeekLow': get_raw(detail, 'fiftyTwoWeekLow')
+        'currentPrice': info_data.get('currentPrice') or info_data.get('regularMarketPrice') or info_data.get('regularMarketPreviousClose'),
+        'targetMeanPrice': info_data.get('targetMeanPrice') or info_data.get('targetMedianPrice'),
+        'marketCap': info_data.get('marketCap'),
+        'trailingPE': info_data.get('trailingPE'),
+        'forwardPE': info_data.get('forwardPE'),
+        'pegRatio': info_data.get('pegRatio'),
+        'priceToBook': info_data.get('priceToBook'),
+        'priceToSales': info_data.get('priceToSalesTrailing12Months') or info_data.get('priceToSales'),
+        'roe': info_data.get('returnOnEquity'),
+        'divYield': info_data.get('dividendYield'),
+        'recommendation': info_data.get('recommendationKey', 'N/A'),
+        'fiftyTwoWeekHigh': info_data.get('fiftyTwoWeekHigh'),
+        'fiftyTwoWeekLow': info_data.get('fiftyTwoWeekLow')
     }
     return metrics
 
