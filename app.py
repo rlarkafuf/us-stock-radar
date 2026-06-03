@@ -511,9 +511,12 @@ search_button = st.sidebar.button("데이터 분석 실행", use_container_width
 st.sidebar.markdown("---")
 st.sidebar.markdown("""
 <div style='background: rgba(255, 255, 255, 0.45); padding: 15px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); margin-bottom: 15px;'>
-    <h4 style='margin-top: 0; color: #1F4E78; font-size: 14px; display: flex; align-items: center; gap: 6px;'>☕ 개발자 응원하기</h4>
-    <p style='font-size: 12px; color: #555; margin-bottom: 12px; line-height: 1.4;'>유익하게 사용하셨나요? 따뜻한 커피 한 잔이 지속적인 서비스 개선과 운영에 큰 힘이 됩니다!</p>
-    <a href='https://toss.me/yourlink' target='_blank' style='display: block; text-align: center; background: linear-gradient(135deg, #1F4E78, #00B0F0); color: white; padding: 8px 12px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); transition: transform 0.2s;'>커피 한 잔 후원하기</a>
+    <h4 style='margin-top: 0; color: #1F4E78; font-size: 14px; display: flex; align-items: center; gap: 6px;'>☕ 개발자 후원하기</h4>
+    <p style='font-size: 11px; color: #555; margin-bottom: 10px; line-height: 1.4;'>유익하게 사용하셨나요? 따뜻한 후원이 서비스 유지 및 기능 개선에 큰 응원이 됩니다!</p>
+    <div style='font-size: 11px; font-weight: bold; color: #2C3E50; background: rgba(255,255,255,0.7); padding: 8px; border-radius: 6px; text-align: center; margin-bottom: 10px; border: 1px dashed rgba(31, 78, 120, 0.4);'>
+        카카오뱅크 3333-XX-XXXXXXX<br>(예금주: 홍길동)
+    </div>
+    <a href='https://donaricano.com/mypage/yourlink' target='_blank' style='display: block; text-align: center; background: linear-gradient(135deg, #1F4E78, #00B0F0); color: white; padding: 8px 12px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);'>도네리카노 커피 후원하기</a>
 </div>
 """, unsafe_allow_html=True)
 
@@ -522,9 +525,9 @@ st.sidebar.markdown("""
     <h4 style='margin-top: 0; color: #1F4E78; font-size: 14px; display: flex; align-items: center; gap: 6px;'>📚 추천 미국 주식 도서</h4>
     <p style='font-size: 12px; color: #555; margin-bottom: 12px; line-height: 1.4;'>대시보드와 함께 읽으면 효과가 2배가 되는 투자 베스트셀러</p>
     <ul style='font-size: 12px; color: #34495E; padding-left: 20px; margin-bottom: 0; line-height: 1.6;'>
-        <li style='margin-bottom: 6px;'><a href='https://link.coupang.com/a/yourlink1' target='_blank' style='color: #1F4E78; text-decoration: none; font-weight: bold;'>미국 주식 처음공부</a></li>
-        <li style='margin-bottom: 6px;'><a href='https://link.coupang.com/a/yourlink2' target='_blank' style='color: #1F4E78; text-decoration: none; font-weight: bold;'>피터 린치의 이기는 투자</a></li>
-        <li><a href='https://link.coupang.com/a/yourlink3' target='_blank' style='color: #1F4E78; text-decoration: none; font-weight: bold;'>워런 버핏의 주주 서한</a></li>
+        <li style='margin-bottom: 6px;'><a href='https://link.coupang.com/a/ehuiyiGyrc' target='_blank' style='color: #1F4E78; text-decoration: none; font-weight: bold;'>미국 주식 처음공부</a></li>
+        <li style='margin-bottom: 6px;'><a href='https://link.coupang.com/a/ehuoik32Oq' target='_blank' style='color: #1F4E78; text-decoration: none; font-weight: bold;'>피터 린치의 이기는 투자</a></li>
+        <li><a href='https://link.coupang.com/a/ehuqm0ojsW' target='_blank' style='color: #1F4E78; text-decoration: none; font-weight: bold;'>워런 버핏의 주주 서한</a></li>
     </ul>
     <div style='font-size: 9px; color: #999; text-align: center; margin-top: 12px; line-height: 1.3;'>이 포스팅은 쿠팡 파트너스 활동의 일환으로,<br>이에 따른 일정액의 수수료를 제공받습니다.</div>
 </div>
