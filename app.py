@@ -539,6 +539,7 @@ st.sidebar.markdown("""
 # ----------------------------------------------------
 st.markdown("<div class='main-title'>▣ US STOCKS PREMIUM RADAR</div>", unsafe_allow_html=True)
 st.markdown("<div class='sub-title'>SEC EDGAR 정밀 재무 분석 & 실시간 인터랙티브 시각화 대시보드</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: right; font-size: 11px; color: #888; margin-top: -10px; margin-bottom: 20px;'>공유/출처 주소: us-stock-radar.streamlit.app</div>", unsafe_allow_html=True)
 
 if ticker_input:
     # 1. CIK 정보 로드
@@ -697,7 +698,12 @@ if ticker_input:
                             title=f"최근 2개년 주가 추이 (Weekly Close)",
                             xaxis_title="날짜", yaxis_title="주가 (USD)",
                             template="plotly_white", height=380,
-                            margin=dict(l=20, r=20, t=40, b=20)
+                            margin=dict(l=20, r=20, t=40, b=40),
+                            annotations=[dict(
+                                text="US Stock Radar (us-stock-radar.streamlit.app)",
+                                xref="paper", yref="paper", x=0.99, y=-0.22,
+                                showarrow=False, font=dict(size=9, color="gray"), opacity=0.5
+                            )]
                         )
                         st.plotly_chart(fig_hist, use_container_width=True)
                     else:
@@ -928,7 +934,13 @@ if ticker_input:
                     ),
                     barmode='group',
                     template="plotly_white",
-                    height=500
+                    height=500,
+                    margin=dict(b=60),
+                    annotations=[dict(
+                        text="US Stock Radar (us-stock-radar.streamlit.app)",
+                        xref="paper", yref="paper", x=0.99, y=-0.15,
+                        showarrow=False, font=dict(size=10, color="gray"), opacity=0.5
+                    )]
                 )
                 st.plotly_chart(fig1, use_container_width=True)
                 
@@ -946,7 +958,13 @@ if ticker_input:
                     yaxis_title="Margin (%)",
                     yaxis_ticksuffix="%",
                     template="plotly_white",
-                    height=450
+                    height=450,
+                    margin=dict(b=60),
+                    annotations=[dict(
+                        text="US Stock Radar (us-stock-radar.streamlit.app)",
+                        xref="paper", yref="paper", x=0.99, y=-0.18,
+                        showarrow=False, font=dict(size=10, color="gray"), opacity=0.5
+                    )]
                 )
                 st.plotly_chart(fig2, use_container_width=True)
                 
@@ -963,7 +981,13 @@ if ticker_input:
                     xaxis_title="분기",
                     yaxis_title="USD (Millions)",
                     template="plotly_white",
-                    height=450
+                    height=450,
+                    margin=dict(b=60),
+                    annotations=[dict(
+                        text="US Stock Radar (us-stock-radar.streamlit.app)",
+                        xref="paper", yref="paper", x=0.99, y=-0.18,
+                        showarrow=False, font=dict(size=10, color="gray"), opacity=0.5
+                    )]
                 )
                 st.plotly_chart(fig3, use_container_width=True)
                 
@@ -981,7 +1005,13 @@ if ticker_input:
                     yaxis_title="USD (Millions)",
                     yaxis2_title="Turnover Ratio",
                     template="plotly_white",
-                    height=450
+                    height=450,
+                    margin=dict(b=60),
+                    annotations=[dict(
+                        text="US Stock Radar (us-stock-radar.streamlit.app)",
+                        xref="paper", yref="paper", x=0.99, y=-0.18,
+                        showarrow=False, font=dict(size=10, color="gray"), opacity=0.5
+                    )]
                 )
                 st.plotly_chart(fig4, use_container_width=True)
 else:
