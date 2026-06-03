@@ -378,7 +378,27 @@ def fetch_yfinance_data_cached(ticker):
     """yfinance 라이브러리를 사용하여 안정적으로 실시간 주가 및 재무지표 정보를 수집하는 함수"""
     try:
         t = yf.Ticker(ticker)
-        info = t.info
+        info = {}
+        try:
+            info = t.info
+        except Exception:
+            pass
+            
+        if not isinstance(info, dict):
+            info = {}
+            
+        try:
+            fast = t.fast_info
+            if not info.get('currentPrice'):
+                info['currentPrice'] = fast.get('lastPrice') or fast.get('regularMarketPrice')
+            if not info.get('marketCap'):
+                info['marketCap'] = fast.get('marketCap')
+            if not info.get('fiftyTwoWeekHigh'):
+                info['fiftyTwoWeekHigh'] = fast.get('fiftyTwoWeekHigh') or fast.get('yearHigh')
+            if not info.get('fiftyTwoWeekLow'):
+                info['fiftyTwoWeekLow'] = fast.get('fiftyTwoWeekLow') or fast.get('yearLow')
+        except Exception:
+            pass
         
         # 2021-01-01부터 현재까지 1주 단위 주가 역사 데이터 수집
         hist = t.history(start="2021-01-01", interval="1wk")
@@ -474,8 +494,54 @@ if ticker_input:
             
             # --- 대시보드 메트릭 연동 준비 ---
             price = yf_metrics.get('currentPrice')
+            if not price and price_history:
+                price = price_history[-1][1]
+                
             target = yf_metrics.get('targetMeanPrice')
+            mcap = yf_metrics.get('marketCap')
             
+            # --- [수치 직접 복원 알고리즘 - Fallback] ---
+            ttm_net_income = 0.0
+            ttm_revenue = 0.0
+            recent_equity = 0.0
+            
+            if len(valid_quarters) >= 4:
+                for fy, q in valid_quarters[-4:]:
+                    ttm_net_income += resolved['net_income'].get((fy, q), 0.0)
+                    ttm_revenue += resolved['revenue'].get((fy, q), 0.0)
+            else:
+                for fy, q in valid_quarters:
+                    ttm_net_income += resolved['net_income'].get((fy, q), 0.0)
+                    ttm_revenue += resolved['revenue'].get((fy, q), 0.0)
+                if len(valid_quarters) > 0:
+                    ttm_net_income = (ttm_net_income / len(valid_quarters)) * 4
+                    ttm_revenue = (ttm_revenue / len(valid_quarters)) * 4
+            
+            if len(valid_quarters) > 0:
+                last_fy, last_q = valid_quarters[-1]
+                recent_equity = resolved['equity'].get((last_fy, last_q), 0.0)
+                
+            tpe = yf_metrics.get('trailingPE')
+            if not tpe and price and mcap and ttm_net_income > 0:
+                tpe = mcap / (ttm_net_income * 1e6)
+                
+            fpe = yf_metrics.get('forwardPE')
+            if not fpe and tpe:
+                fpe = tpe
+
+            pbr = yf_metrics.get('priceToBook')
+            if not pbr and mcap and recent_equity > 0:
+                pbr = mcap / (recent_equity * 1e6)
+
+            psr = yf_metrics.get('priceToSales') or yf_metrics.get('priceToSalesTrailing12Months')
+            if not psr and mcap and ttm_revenue > 0:
+                psr = mcap / (ttm_revenue * 1e6)
+
+            roe = yf_metrics.get('roe')
+            if not roe and ttm_net_income > 0 and recent_equity > 0:
+                roe = ttm_net_income / recent_equity
+            
+            # --- 마크다운 렌더링용 변수 포맷팅 ---
             if price and target:
                 upside = (target - price) / price
                 upside_str = f"{upside * 100:.1f}%"
@@ -490,12 +556,9 @@ if ticker_input:
                 upside_str = "N/A"
                 upside_class = ""
                 
-            mcap = yf_metrics.get('marketCap')
             mcap_str = f"${mcap / 1e9:.1f}B" if mcap else "N/A"
-            
-            fpe = yf_metrics.get('forwardPE')
-            fpe_str = f"{fpe:.2f}x" if fpe else "N/A"
-            if fpe:
+            fpe_str = f"{fpe:.2f}x" if fpe and isinstance(fpe, (int, float)) else "N/A"
+            if fpe and isinstance(fpe, (int, float)):
                 if fpe <= 25: fpe_class = "delta-green"
                 elif fpe <= 50: fpe_class = "delta-yellow"
                 else: fpe_class = "delta-red"
@@ -503,16 +566,13 @@ if ticker_input:
                 fpe_class = ""
                 
             peg = yf_metrics.get('pegRatio')
-            peg_str = f"{peg:.2f}" if peg else "N/A"
+            peg_str = f"{peg:.2f}" if peg and isinstance(peg, (int, float)) else "N/A"
             
-            pbr = yf_metrics.get('priceToBook')
-            pbr_str = f"{pbr:.2f}x" if pbr else "N/A"
-            
-            roe = yf_metrics.get('roe')
-            roe_str = f"{roe * 100:.2f}%" if roe else "N/A"
+            pbr_str = f"{pbr:.2f}x" if pbr and isinstance(pbr, (int, float)) else "N/A"
+            roe_str = f"{roe * 100:.2f}%" if roe and isinstance(roe, (int, float)) else "N/A"
             
             div = yf_metrics.get('divYield')
-            div_str = f"{div * 100:.2f}%" if div else "0.00%"
+            div_str = f"{div * 100:.2f}%" if div and isinstance(div, (int, float)) else "0.00%"
             
             recommendation = str(yf_metrics.get('recommendation', 'N/A')).replace('_', ' ').title()
             
@@ -523,7 +583,7 @@ if ticker_input:
                 pos_52w_str = f"{pos_52w:.1f}%"
             else:
                 pos_52w_str = "N/A"
-            # PEG Ratio 조건부 서식 설정 (1.5 이하 초록, 2.5 이하 노랑, 2.5 초과 빨강)
+                
             if peg and isinstance(peg, (int, float)):
                 if peg <= 1.5:
                     peg_class = "delta-green"
@@ -534,8 +594,7 @@ if ticker_input:
             else:
                 peg_class = ""
                 
-            tpe = yf_metrics.get('trailingPE')
-            tpe_str = f"{tpe:.2f}x" if tpe else "N/A"
+            tpe_str = f"{tpe:.2f}x" if tpe and isinstance(tpe, (int, float)) else "N/A"
             
             # ----------------------------------------------------
             # 5. UI Layout - 글래스모피즘 메트릭 카드 렌더링
