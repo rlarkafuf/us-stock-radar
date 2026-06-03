@@ -858,23 +858,26 @@ if ticker_input:
                                 pass
                     q_prices.append(best_price if best_price is not None else 0.0)
 
-                fig1 = make_subplots(specs=[[{"secondary_y": True}]])
-                fig1.add_trace(go.Bar(x=cols, y=rev, name='매출액 (Revenue)', marker_color='#1F4E78'), secondary_y=False)
-                fig1.add_trace(go.Bar(x=cols, y=op_inc, name='영업이익 (Operating Income)', marker_color='#00B0F0'), secondary_y=False)
+                fig1 = go.Figure()
+                fig1.add_trace(go.Bar(x=cols, y=rev, name='매출액 (Revenue)', marker_color='#1F4E78', yaxis="y1"))
+                fig1.add_trace(go.Bar(x=cols, y=op_inc, name='영업이익 (Operating Income)', marker_color='#00B0F0', yaxis="y1"))
                 
                 # 마진율 (우측 Y축 1)
                 fig1.add_trace(go.Scatter(x=cols, y=[x*100 for x in opm], name='OPM (%)', 
-                                          line=dict(color='#2ecc71', width=3), mode='lines+markers'), secondary_y=True)
+                                          line=dict(color='#2ecc71', width=3), mode='lines+markers', yaxis="y2"))
                 fig1.add_trace(go.Scatter(x=cols, y=[x*100 for x in gpm], name='GPM (%)', 
-                                          line=dict(color='#e67e22', width=2.5, dash='dash'), mode='lines+markers'), secondary_y=True)
+                                          line=dict(color='#e67e22', width=2.5, dash='dash'), mode='lines+markers', yaxis="y2"))
                 
-                # 주가 (우측 Y축 2 - 3중 축 시뮬레이션을 위해 yaxis="y3" 사용)
+                # 주가 (우측 Y축 2 - yaxis="y3" 사용)
                 fig1.add_trace(go.Scatter(x=cols, y=q_prices, name='주가 (Stock Price)', 
                                           line=dict(color='#9b59b6', width=2.5), mode='lines+markers', yaxis="y3"))
                 
                 fig1.update_layout(
                     title_text="매출액, 영업이익, 마진율(OPM/GPM) 및 주가 비교 추이",
-                    xaxis_title="분기",
+                    xaxis=dict(
+                        title="분기",
+                        domain=[0, 0.88]  # 우측에 y3 축 라벨을 표시할 공간 확보
+                    ),
                     yaxis=dict(
                         title="USD (Millions)",
                         titlefont=dict(color="#1F4E78"),
@@ -897,9 +900,8 @@ if ticker_input:
                         anchor="free",
                         overlaying="y",
                         side="right",
-                        position=0.92
+                        position=0.95
                     ),
-                    margin=dict(r=80),
                     barmode='group',
                     template="plotly_white",
                     height=500
