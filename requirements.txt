@@ -3,3 +3,4 @@ requests
 pandas
 plotly
 yfinance
+multitasking==0.0.11
