@@ -161,114 +161,83 @@ def determine_fye_month(us_gaap):
     return 12
 
 def extract_raw_concept_data(us_gaap, tags, fye):
-    found_tag = None
-    latest_date = ""
-    max_entries = -1
+    """
+    제공된 tags 리스트의 XBRL 데이터를 우선순위 순으로 병합하여 반환.
+    단일 태그만 선택하는 것이 아니라, 우선순위가 높은 태그의 값이 있으면 그것을 취하고,
+    없으면 후순위 태그의 데이터로 누락(gap)을 채우는 Fallback 구조.
+    """
+    raw_periods = {}
     
-    for tag in tags:
+    # 우선순위가 낮은 태그부터 데이터를 채워나가서 우선순위가 높은 태그가 최종 덮어쓰도록 처리
+    for tag in reversed(tags):
         if tag not in us_gaap:
             continue
             
         units = us_gaap[tag].get('units', {})
-        entries = []
+        usd_entries = []
         for u in units.values():
             if isinstance(u, list) and len(u) > 0:
-                entries = u
+                usd_entries = u
                 break
                 
-        if not entries:
-            continue
-            
-        tag_latest_date = ""
-        for entry in entries:
-            end_str = entry.get('end')
-            if end_str and end_str > tag_latest_date:
-                tag_latest_date = end_str
+        for entry in usd_entries:
+            form = entry.get('form')
+            if form not in ['10-Q', '10-K']:
+                continue
                 
-        if not found_tag:
-            found_tag = tag
-            latest_date = tag_latest_date
-            max_entries = len(entries)
-        else:
-            if tag_latest_date > latest_date:
-                found_tag = tag
-                latest_date = tag_latest_date
-                max_entries = len(entries)
-            elif tag_latest_date == latest_date:
-                if len(entries) > max_entries:
-                    found_tag = tag
-                    max_entries = len(entries)
-                    
-    if not found_tag:
-        return {}
-        
-    units = us_gaap[found_tag].get('units', {})
-    usd_entries = []
-    for u in units.values():
-        if isinstance(u, list) and len(u) > 0:
-            usd_entries = u
-            break
+            val = entry.get('val')
+            start_str = entry.get('start')
+            end_str = entry.get('end')
+            filed_str = entry.get('filed')
             
-    raw_periods = {}
-    
-    for entry in usd_entries:
-        form = entry.get('form')
-        if form not in ['10-Q', '10-K']:
-            continue
+            if val is None or not end_str:
+                continue
+                
+            start_date = parse_date(start_str)
+            end_date = parse_date(end_str)
+            duration_days = (end_date - start_date).days if (start_date and end_date) else 0
             
-        val = entry.get('val')
-        start_str = entry.get('start')
-        end_str = entry.get('end')
-        filed_str = entry.get('filed')
-        
-        if val is None or not end_str:
-            continue
+            end_month = end_date.month
             
-        start_date = parse_date(start_str)
-        end_date = parse_date(end_str)
-        duration_days = (end_date - start_date).days if (start_date and end_date) else 0
-        
-        end_month = end_date.month
-        
-        if fye < 12 and end_month > fye:
-            fiscal_year = end_date.year + 1
-        else:
-            fiscal_year = end_date.year
+            if fye < 12 and end_month > fye:
+                fiscal_year = end_date.year + 1
+            else:
+                fiscal_year = end_date.year
+                
+            diff = (end_month - fye) % 12
+            q_type = None
             
-        diff = (end_month - fye) % 12
-        q_type = None
-        
-        if duration_days > 0:
-            if 80 <= duration_days <= 105:
+            if duration_days > 0:
+                if 80 <= duration_days <= 105:
+                    if diff == 3: q_type = 'Q1'
+                    elif diff == 6: q_type = 'Q2'
+                    elif diff == 9: q_type = 'Q3'
+                    elif diff == 0: q_type = 'Q4'
+                elif 160 <= duration_days <= 200:
+                    q_type = '6M_YTD'
+                elif 240 <= duration_days <= 290:
+                    q_type = '9M_YTD'
+                elif 330 <= duration_days <= 380:
+                    q_type = 'FY'
+            else:
                 if diff == 3: q_type = 'Q1'
                 elif diff == 6: q_type = 'Q2'
                 elif diff == 9: q_type = 'Q3'
                 elif diff == 0: q_type = 'Q4'
-            elif 160 <= duration_days <= 200:
-                q_type = '6M_YTD'
-            elif 240 <= duration_days <= 290:
-                q_type = '9M_YTD'
-            elif 330 <= duration_days <= 380:
-                q_type = 'FY'
-        else:
-            if diff == 3: q_type = 'Q1'
-            elif diff == 6: q_type = 'Q2'
-            elif diff == 9: q_type = 'Q3'
-            elif diff == 0: q_type = 'Q4'
+                
+            if not q_type:
+                continue
+                
+            key = (fiscal_year, q_type)
+            if key not in raw_periods:
+                raw_periods[key] = []
+            raw_periods[key].append({
+                'val': val,
+                'filed': filed_str,
+                'end_month': end_month,
+                'end_year': end_date.year
+            })
             
-        if not q_type:
-            continue
-            
-        key = (fiscal_year, q_type)
-        if key not in raw_periods:
-            raw_periods[key] = []
-        raw_periods[key].append({
-            'val': val,
-            'filed': filed_str,
-            'end_month': end_month,
-            'end_year': end_date.year
-        })
-        
     cleaned_periods = {}
     for key, entries in raw_periods.items():
         entries.sort(key=lambda x: x['filed'], reverse=True)
