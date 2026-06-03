@@ -883,8 +883,7 @@ if ticker_input:
                         tickfont=dict(color="#1F4E78")
                     ),
                     yaxis2=dict(
-                        title="Margin (%)",
-                        titlefont=dict(color="#2ecc71"),
+                        title=dict(text="Margin (%)", font=dict(color="#2ecc71")),
                         tickfont=dict(color="#2ecc71"),
                         ticksuffix="%",
                         anchor="x",
@@ -892,8 +891,7 @@ if ticker_input:
                         side="right"
                     ),
                     yaxis3=dict(
-                        title="주가 (USD)",
-                        titlefont=dict(color="#9b59b6"),
+                        title=dict(text="주가 (USD)", font=dict(color="#9b59b6")),
                         tickfont=dict(color="#9b59b6"),
                         ticksuffix="$",
                         anchor="free",
