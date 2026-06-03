@@ -1,0 +1,14 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$*.py
+
+# CIB / App Data
+.gemini/
+
+# Excel Outputs (무거운 데이터 파일 제외)
+*.xlsx
+*.pdf
+
+# Local logs
+*.log
