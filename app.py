@@ -542,6 +542,7 @@ if ticker_input:
                 else:
                     upside_class = "delta-red"
             else:
+                upside = None
                 upside_str = "N/A"
                 upside_class = ""
                 
@@ -751,7 +752,7 @@ if ticker_input:
                                 showarrow=False, font=dict(size=9, color="gray"), opacity=0.5
                             )]
                         )
-                        st.plotly_chart(fig_hist, use_container_width=True)
+                        st.plotly_chart(fig_hist, width='stretch')
                     else:
                         st.info("주가 히스토리 데이터를 불러올 수 없습니다.")
                         
@@ -829,7 +830,7 @@ if ticker_input:
                     ]
                     
                     # 소수점 반올림 및 Styler 의존성 제거 (Jinja2 충돌 방지)
-                    st.dataframe(df_income.round(2), use_container_width=True)
+                    st.dataframe(df_income.round(2), width='stretch')
                     
                 # 2. 손익 성장률
                 with sheet_tabs[1]:
@@ -863,7 +864,7 @@ if ticker_input:
                         calc_growth(net_inc, 'YoY'), calc_growth(net_inc, 'QoQ')
                     ]
                     # 소수점 반올림 및 결측치 문자열 대체 (Styler 의존성 제거)
-                    st.dataframe(df_growth.round(2).fillna("-"), use_container_width=True)
+                    st.dataframe(df_growth.round(2).fillna("-"), width='stretch')
                     
                 # 3. 현금흐름표
                 with sheet_tabs[2]:
@@ -875,7 +876,7 @@ if ticker_input:
                     fcf = [o - c for o, c in zip(ocf, capex)]
                     
                     df_cf[cols] = [ocf, capex, fcf]
-                    st.dataframe(df_cf.round(2), use_container_width=True)
+                    st.dataframe(df_cf.round(2), width='stretch')
                     
                 # 4. 재무상태표 (Balance Sheet)
                 with sheet_tabs[3]:
@@ -906,7 +907,7 @@ if ticker_input:
                         cur_ass, cur_liab, tot_liab, lt_debt, equity, cash_val, inv, receiv,
                         cur_ratio, de_ratio, net_debt, inv_turn, receiv_turn
                     ]
-                    st.dataframe(df_bs.round(2), use_container_width=True)
+                    st.dataframe(df_bs.round(2), width='stretch')
 
             # --- TAB 3: 인터랙티브 차트 분석 ---
             with tab_charts:
@@ -993,7 +994,7 @@ if ticker_input:
                         showarrow=False, font=dict(size=10, color="gray"), opacity=0.5
                     )]
                 )
-                st.plotly_chart(fig1, use_container_width=True)
+                st.plotly_chart(fig1, width='stretch')
                 
                 # ----------------------------------------------------
                 # Chart 2: 마진율 추이 (GPM, OPM, 판관비율)
@@ -1017,7 +1018,7 @@ if ticker_input:
                         showarrow=False, font=dict(size=10, color="gray"), opacity=0.5
                     )]
                 )
-                st.plotly_chart(fig2, use_container_width=True)
+                st.plotly_chart(fig2, width='stretch')
                 
                 # ----------------------------------------------------
                 # Chart 3: OCF, CAPEX, FCF 현금흐름 추이
@@ -1040,7 +1041,7 @@ if ticker_input:
                         showarrow=False, font=dict(size=10, color="gray"), opacity=0.5
                     )]
                 )
-                st.plotly_chart(fig3, use_container_width=True)
+                st.plotly_chart(fig3, width='stretch')
                 
                 # ----------------------------------------------------
                 # Chart 4: 재고자산 및 회전율 추이
@@ -1064,6 +1065,6 @@ if ticker_input:
                         showarrow=False, font=dict(size=10, color="gray"), opacity=0.5
                     )]
                 )
-                st.plotly_chart(fig4, use_container_width=True)
+                st.plotly_chart(fig4, width='stretch')
 else:
     st.info("분석할 미국 주식 티커를 사이드바에 입력한 후 '데이터 분석 실행' 버튼을 누르세요.")
