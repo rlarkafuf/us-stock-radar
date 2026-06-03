@@ -859,8 +859,8 @@ if ticker_input:
                     q_prices.append(best_price if best_price is not None else 0.0)
 
                 fig1 = go.Figure()
-                fig1.add_trace(go.Bar(x=cols, y=rev, name='매출액 (Revenue)', marker_color='#1F4E78', yaxis="y1"))
-                fig1.add_trace(go.Bar(x=cols, y=op_inc, name='영업이익 (Operating Income)', marker_color='#00B0F0', yaxis="y1"))
+                fig1.add_trace(go.Bar(x=cols, y=rev, name='매출액 (Revenue)', marker_color='#1F4E78', yaxis="y"))
+                fig1.add_trace(go.Bar(x=cols, y=op_inc, name='영업이익 (Operating Income)', marker_color='#00B0F0', yaxis="y"))
                 
                 # 마진율 (우측 Y축 1)
                 fig1.add_trace(go.Scatter(x=cols, y=[x*100 for x in opm], name='OPM (%)', 
@@ -875,12 +875,11 @@ if ticker_input:
                 fig1.update_layout(
                     title_text="매출액, 영업이익, 마진율(OPM/GPM) 및 주가 비교 추이",
                     xaxis=dict(
-                        title="분기",
+                        title=dict(text="분기"),
                         domain=[0, 0.88]  # 우측에 y3 축 라벨을 표시할 공간 확보
                     ),
                     yaxis=dict(
-                        title="USD (Millions)",
-                        titlefont=dict(color="#1F4E78"),
+                        title=dict(text="USD (Millions)", font=dict(color="#1F4E78")),
                         tickfont=dict(color="#1F4E78")
                     ),
                     yaxis2=dict(
