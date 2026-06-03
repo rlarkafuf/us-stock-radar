@@ -685,6 +685,83 @@ if ticker_input:
             
             # --- TAB 1: 대시보드 요약 ---
             with tab_summary:
+                # ----------------------------------------------------
+                # AI 실시간 종합 진단 엔진 (전략 1 - Rule-based)
+                # ----------------------------------------------------
+                is_opm_improving = False
+                # OPM 추이 분석
+                if 'opm' in locals() and len(opm) >= 2:
+                    is_opm_improving = opm[-1] > opm[-2]
+                
+                valuation_desc = ""
+                peg_val = yf_metrics.get('pegRatio')
+                if peg_val and peg_val > 0:
+                    if peg_val <= 1.2:
+                        valuation_desc = f"성장성 대비 주가가 매우 저평가(PEG {peg_val:.2f})된 매력적인 구간"
+                    elif peg_val <= 2.0:
+                        valuation_desc = f"이익 성장세에 부합하는 합리적인 주가 평가(PEG {peg_val:.2f}) 수준"
+                    else:
+                        valuation_desc = f"이익 증가율 대비 주가가 다소 과대평가(PEG {peg_val:.2f})되어 밸류에이션 부담이 존재하는 구간"
+                else:
+                    if fpe:
+                        if fpe <= 20:
+                            valuation_desc = f"선행 주가수익비율(FWD PE {fpe:.1f}x) 기준 안정적인 저평가 국면"
+                        else:
+                            valuation_desc = f"선행 주가수익비율(FWD PE {fpe:.1f}x) 기준 다소 고평가 국면"
+                    else:
+                        valuation_desc = "밸류에이션 멀티플 정보가 부족하나 단기 변동성 관찰이 필요한 국면"
+
+                margin_desc = ""
+                if is_opm_improving:
+                    margin_desc = "최근 분기 영업이익률(OPM)이 개선세를 나타내어 기업의 자체적 이익 창출력과 생산성이 강화되고 있음이 감지되었습니다."
+                else:
+                    margin_desc = "최근 분기 마진율(OPM/GPM)이 다소 둔화되거나 횡보하고 있어 원가 부담 여부와 비용 통제 현황에 대한 세밀한 모니터링이 권장됩니다."
+
+                upside_desc = ""
+                ai_opinion = "중립 (Hold)"
+                opinion_color = "#f39c12" # 주황
+
+                if price and target:
+                    upside_val = (target - price) / price
+                    if upside_val >= 0.20 and (peg_val is None or peg_val < 1.8):
+                        ai_opinion = "적극 매수 (Strong Buy)"
+                        opinion_color = "#2ecc71" # 초록
+                        upside_desc = f"월가 평균 목표주가(${target:.2f}) 대비 약 {upside_val*100:.1f}%의 높은 기대 상승여력이 존재하여 안전마진이 충분히 확보된 상태입니다."
+                    elif upside_val >= 0.05 and (peg_val is None or peg_val < 2.5):
+                        ai_opinion = "매수 (Buy)"
+                        opinion_color = "#3498db" # 파랑
+                        upside_desc = f"목표주가(${target:.2f}) 대비 약 {upside_val*100:.1f}%의 안정적인 상승여력이 확인되어 분할 매수 진입이 유효한 국면입니다."
+                    elif upside_val < -0.05:
+                        ai_opinion = "비중 축소 (Underperform)"
+                        opinion_color = "#e74c3c" # 빨강
+                        upside_desc = f"현재 주가가 월가 평균 목표가(${target:.2f})를 초과하여 단기 고점 리스크가 크므로 무리한 추격 매수보다는 비중 축소 및 익절 관점을 권장합니다."
+                    else:
+                        ai_opinion = "중립 (Hold)"
+                        opinion_color = "#f39c12" # 주황
+                        upside_desc = f"목표주가(${target:.2f}) 대비 상승여력이 약 {upside_val*100:.1f}% 수준으로 가치 평가가 선반영되어 있어 당분간 관망세를 유지하는 것이 합리적입니다."
+                else:
+                    ai_opinion = "정보 부족 (Neutral)"
+                    opinion_color = "#95a5a6" # 회색
+                    upside_desc = "목표주가 산정을 위한 월가 애널리스트 데이터가 불충분하므로 차트 기술적 지표 및 수급 현황을 중심으로 대응하는 것이 권장됩니다."
+
+                ai_report_html = f"""
+                <div style='background: linear-gradient(135deg, rgba(31, 78, 120, 0.08), rgba(0, 176, 240, 0.08)); 
+                            padding: 20px; border-radius: 12px; border: 1px solid rgba(31, 78, 120, 0.2); 
+                            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); margin-bottom: 25px;'>
+                    <div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;'>
+                        <h4 style='margin: 0; color: #1F4E78; font-size: 16px; font-weight: bold; display: flex; align-items: center; gap: 8px;'>🤖 AI 실시간 종합 투자 진단 리포트</h4>
+                        <span style='background-color: {opinion_color}; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);'>{ai_opinion}</span>
+                    </div>
+                    <div style='font-size: 12.5px; color: #2C3E50; line-height: 1.6; margin-bottom: 10px;'>
+                        분석 결과 본 기업은 <b>{valuation_desc}</b>으로 평가됩니다. {margin_desc} {upside_desc}
+                    </div>
+                    <div style='font-size: 10px; color: #7F8C8D; text-align: right; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 8px;'>
+                        ※ 본 리포트는 실시간 분기 공시 자료와 월가 컨센서스를 기반으로 AI 알고리즘이 종합 진단한 참조용 데이터입니다.
+                    </div>
+                </div>
+                """
+                st.markdown(ai_report_html, unsafe_allow_html=True)
+
                 st.markdown("### 🔍 주요 분석 요약")
                 sum_col1, sum_col2 = st.columns([2, 1])
                 
