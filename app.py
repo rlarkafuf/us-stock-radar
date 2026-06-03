@@ -757,12 +757,17 @@ if ticker_input:
                         
                 with sum_col2:
                     st.markdown("#### 💡 Valuation & 52주 범위 정보")
+                    trailing_pe_val = yf_metrics.get('trailingPE')
+                    price_to_sales_val = yf_metrics.get('priceToSales')
+                    trailing_pe_str = f"{trailing_pe_val:.2f}x" if isinstance(trailing_pe_val, (int, float)) else "N/A"
+                    price_to_sales_str = f"{price_to_sales_val:.2f}x" if isinstance(price_to_sales_val, (int, float)) else "N/A"
+                    
                     st.markdown(f"""
                     - **52주 최고가**: `${high_52w if high_52w else 'N/A'}`
                     - **52주 최저가**: `${low_52w if low_52w else 'N/A'}`
                     - **현재가 위치 (%)**: `{pos_52w_str}` *(최저가 0% ~ 최고가 100% 기준)*
-                    - **Trailing PE**: `{yf_metrics.get('trailingPE', 'N/A'):.2f}x`
-                    - **Price to Sales (PSR)**: `{yf_metrics.get('priceToSales', 'N/A'):.2f}x`
+                    - **Trailing PE**: `{trailing_pe_str}`
+                    - **Price to Sales (PSR)**: `{price_to_sales_str}`
                     """)
                     
                     st.markdown("#### 📋 밸류에이션 리스크 체크")
